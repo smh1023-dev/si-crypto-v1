@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>에스아이스토리 크립토 — {{ date_str }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{--bg:#090909;--bg2:#141414;--bg3:#1c1c1c;--bg4:#262626;
+  --gold:#d4b25e;--gold2:#ecd092;--gb:rgba(212,178,94,.28);
+  --white:#f5f1e8;--gray:#b8b3a4;
+  --green:#4ade80;--red:#f06b6a;--blue:#7ab0ff;--orange:#ff9f6a}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--bg);color:var(--white);
+  font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  font-weight:400;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+a{color:var(--gold2);text-decoration:none}
+
+nav{display:flex;align-items:center;justify-content:space-between;padding:.95rem 2rem;
+  border-bottom:1px solid rgba(212,178,94,.18);background:rgba(9,9,9,.97);
+  position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:.6rem}
+.logo{font-family:'Pretendard Variable','Pretendard',sans-serif;font-size:1.35rem;
+  font-weight:700;color:var(--gold2);letter-spacing:.02em}
+.logo span{font-weight:400;color:var(--white)}
+.report-date{font-size:.86rem;color:var(--gray)}
+.badge{display:inline-block;margin-left:.6rem;padding:2px 8px;background:rgba(74,222,128,.14);
+  border:1px solid rgba(74,222,128,.35);border-radius:2px;font-size:.74rem;color:#4ade80;font-weight:500}
+.nav-btn{display:inline-block;margin-left:.8rem;padding:4px 12px;border:1px solid var(--gold);
+  border-radius:3px;color:var(--gold2);font-weight:600;font-size:.82rem;text-decoration:none;
+  vertical-align:middle}
+.nav-btn:hover{background:rgba(212,178,94,.12)}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid rgba(212,178,94,.12);
+  padding:0 2rem;overflow-x:auto;background:var(--bg)}
+.tab{padding:.95rem 1.5rem;cursor:pointer;color:var(--gray);font-size:.92rem;
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab:hover{color:var(--white)}
+.tab.active{color:var(--gold2);border-bottom-color:var(--gold)}
+
+.page{display:none;padding:2.2rem 2rem;max-width:1280px;margin:0 auto}
+.page.active{display:block}
+
+.sec-label{font-family:'DM Mono',monospace;font-size:.74rem;color:var(--gold);
+  letter-spacing:.18em;margin-bottom:.6rem}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:600;
+  margin-bottom:.3rem;letter-spacing:-.01em}
+.sec-title em{font-style:italic;color:var(--gold2)}
+.sec-sub{color:var(--gray);font-size:.92rem;margin-bottom:1.8rem}
+
+/* ============ 큰 점수 카드 (메인) ============ */
+.hero{display:grid;grid-template-columns:1.4fr 1fr;gap:2rem;margin-bottom:2rem}
+@media(max-width:900px){.hero{grid-template-columns:1fr}}
+
+.score-card{background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  border:1px solid var(--gb);padding:2rem;border-radius:6px;position:relative;overflow:hidden}
+.score-card::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top right,rgba(212,178,94,.07),transparent 60%);
+  pointer-events:none}
+.score-label{font-family:'DM Mono',monospace;font-size:.74rem;color:var(--gold);
+  letter-spacing:.16em;margin-bottom:.6rem}
+.score-value{font-family:'Cormorant Garamond',serif;font-size:5.5rem;font-weight:600;
+  line-height:1;letter-spacing:-.03em;color:var(--gold2)}
+.score-verdict{font-size:1.8rem;font-weight:600;margin-top:1rem;letter-spacing:-.01em}
+.score-emoji{font-size:1.6rem;margin-right:.4rem}
+.score-advice{color:var(--gray);font-size:.94rem;line-height:1.6;margin-top:.8rem}
+.score-range{display:flex;gap:.5rem;margin-top:1.4rem;font-size:.78rem;color:var(--gray);
+  font-family:'DM Mono',monospace}
+.score-range div{flex:1;text-align:center;padding:.4rem;border-radius:2px;background:rgba(255,255,255,.03)}
+.score-range div.active{background:rgba(212,178,94,.18);color:var(--gold2);font-weight:600}
+
+.btc-card{background:var(--bg2);border:1px solid var(--gb);padding:1.5rem;border-radius:6px}
+.btc-symbol{font-family:'DM Mono',monospace;font-size:.84rem;color:var(--gold);letter-spacing:.08em}
+.btc-name{font-size:1.05rem;color:var(--gray);margin-bottom:.6rem}
+.btc-price{font-family:'DM Mono',monospace;font-size:2.4rem;font-weight:500;color:var(--white);
+  letter-spacing:-.02em;line-height:1.1}
+.btc-change{font-size:1.1rem;margin-top:.3rem;font-family:'DM Mono',monospace}
+.up{color:var(--green)} .down{color:var(--red)} .pos{color:var(--green)} .neg{color:var(--red)}
+.neutral{color:var(--gray)} .strong-pos{color:var(--green);font-weight:700}
+.strong-neg{color:var(--red);font-weight:700}
+.btc-meta{margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.06);
+  display:grid;grid-template-columns:1fr 1fr;gap:.6rem;font-size:.84rem;color:var(--gray);font-family:'DM Mono',monospace}
+.btc-meta b{color:var(--white);font-weight:500}
+
+/* ============ 6개 영역 점수 ============ */
+.scores-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.2rem;margin-bottom:2.4rem}
+.score-tile{background:var(--bg2);border:1px solid rgba(212,178,94,.15);padding:1.3rem;
+  border-radius:5px;transition:border-color .15s}
+.score-tile:hover{border-color:var(--gb)}
+.tile-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.6rem}
+.tile-title{font-size:.95rem;font-weight:600;color:var(--white)}
+.tile-letter{font-family:'Cormorant Garamond',serif;font-style:italic;
+  color:var(--gold);font-size:1.6rem;line-height:1;margin-right:.4rem}
+.tile-score{font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:500;line-height:1}
+.tile-reasons{font-size:.82rem;color:var(--gray);line-height:1.55;margin-top:.4rem}
+.tile-reasons div{padding:2px 0;border-bottom:1px dashed rgba(255,255,255,.05)}
+.tile-reasons div:last-child{border:none}
+
+/* ============ 코인 미리보기 ============ */
+.coins-preview{margin-top:2rem}
+.coin-row{display:grid;grid-template-columns:80px 1fr 1fr 1fr 1fr 110px;gap:1rem;
+  align-items:center;padding:.85rem 1rem;background:var(--bg2);
+  border:1px solid rgba(212,178,94,.08);border-radius:4px;margin-bottom:.5rem;
+  transition:border-color .15s}
+.coin-row:hover{border-color:var(--gb)}
+.coin-sym{font-family:'DM Mono',monospace;font-weight:600;color:var(--gold2)}
+.coin-name{color:var(--gray);font-size:.86rem}
+.coin-px{font-family:'DM Mono',monospace;text-align:right}
+.coin-pct{font-family:'DM Mono',monospace;text-align:right;font-size:.88rem}
+.verdict{display:inline-block;padding:3px 10px;border-radius:2px;font-size:.78rem;
+  font-weight:600;letter-spacing:-.005em}
+.v-strong_buy{background:rgba(74,222,128,.18);color:#4ade80}
+.v-buy{background:rgba(74,222,128,.12);color:#86efac}
+.v-hold{background:rgba(212,178,94,.12);color:var(--gold2)}
+.v-wait{background:rgba(255,159,106,.12);color:#ff9f6a}
+.v-trim{background:rgba(255,159,106,.18);color:#ff9f6a}
+.v-sell{background:rgba(240,107,106,.18);color:#f06b6a}
+
+footer{margin-top:3rem;padding:2rem;border-top:1px solid rgba(212,178,94,.12);
+  font-size:.78rem;color:#7a7972;line-height:1.7;text-align:center}
+footer strong{color:var(--gray)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">에스아이 스토리 <span>CRYPTO</span></div>
+  <div class="report-date">
+    {{ timestamp_str }}
+    <span class="badge">매일 아침 갱신</span>
+    <a class="nav-btn" href="./scanner.html">🔍 알트 스캐너</a>
+    <a class="nav-btn" href="./etf_guide.html">📊 ETF 가이드</a>
+    <a class="nav-btn" href="./risk_center.html">⚠️ 리스크</a>
+    <a class="nav-btn" href="./journal.html">📓 저널</a>
+  </div>
+</nav>
+
+<div class="tabs">
+  <div class="tab active" onclick="tab('overview',this)">대시보드</div>
+  <div class="tab" onclick="tab('scores',this)">6개 영역 점수</div>
+  <div class="tab" onclick="tab('preview',this)">코인 미리보기</div>
+</div>
+
+<!-- 대시보드 메인 -->
+<div class="page active" id="page-overview">
+  <div class="sec-label">MARKET</div>
+  <div class="sec-title"><em>오늘의</em> 암호화폐 시장 판단</div>
+  <div class="sec-sub">유동성·반감기·BTC추세·거래량·ETF·심리 6개 영역 점수를 합산해 매수 구간인지 위험 구간인지 판단합니다.</div>
+
+  <div class="hero">
+    <div class="score-card">
+      <div class="score-label">TODAY'S SCORE — {{ iso_date }}</div>
+      <div class="score-value">{% if result.total > 0 %}+{% endif %}{{ result.total }}</div>
+      <div class="score-verdict">
+        <span class="score-emoji">{{ result.emoji }}</span>{{ result.verdict }}
+      </div>
+      <div class="score-advice">{{ result.advice }}</div>
+      <div class="score-range">
+        <div class="{% if result.code == 'strong_buy' %}active{% endif %}">+7~ 강한매수</div>
+        <div class="{% if result.code == 'buy' %}active{% endif %}">+4~+6 분할매수</div>
+        <div class="{% if result.code == 'hold' %}active{% endif %}">+1~+3 보유</div>
+        <div class="{% if result.code == 'wait' %}active{% endif %}">-3~0 관망</div>
+        <div class="{% if result.code == 'cash_out' %}active{% endif %}">-4↓ 현금화</div>
+      </div>
+    </div>
+
+    {% set btc = (coins|selectattr('ticker','equalto','BTC')|first) %}
+    {% if btc %}
+    <div class="btc-card">
+      <div class="btc-symbol">BTC · KRW</div>
+      <div class="btc-name">{{ btc.name }} (비트코인)</div>
+      <div class="btc-price">{{ btc.price|fmt_krw }}</div>
+      <div class="btc-change {{ btc.change_24h|fmt_pct_class }}">
+        24h {{ btc.change_24h|fmt_pct }}
+      </div>
+      <div class="btc-meta">
+        <div>7일 <b class="{{ btc.change_7d|fmt_pct_class }}">{{ btc.change_7d|fmt_pct }}</b></div>
+        <div>30일 <b class="{{ btc.change_30d|fmt_pct_class }}">{{ btc.change_30d|fmt_pct }}</b></div>
+        <div>200일선 <b>{% if btc_trend.sma200 %}${{ '%.0f'|format(btc_trend.sma200) }}{% else %}—{% endif %}</b></div>
+        <div>F&G <b>{% if fng %}{{ fng.value }}{% else %}—{% endif %}</b></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 6개 영역 점수 (간단 표시) -->
+  <div class="scores-grid">
+    {% set tiles = [
+        ('A','유동성', scores.liquidity, reasons.liquidity),
+        ('B','반감기 사이클', scores.halving, reasons.halving),
+        ('C','BTC 추세', scores.btc_trend, reasons.btc_trend),
+        ('D','거래량', scores.volume, reasons.volume),
+        ('E','ETF · 온체인', scores.etf, reasons.etf),
+        ('F','과열 심리', scores.sentiment, reasons.sentiment),
+    ] %}
+    {% for letter,title,sc,rs in tiles %}
+    <div class="score-tile">
+      <div class="tile-hdr">
+        <div><span class="tile-letter">{{ letter }}</span><span class="tile-title">{{ title }}</span></div>
+        <div class="tile-score {% if sc >= 1 %}pos{% elif sc <= -1 %}neg{% else %}neutral{% endif %}">
+          {% if sc > 0 %}+{% endif %}{{ sc }}
+        </div>
+      </div>
+      <div class="tile-reasons">
+        {% for r in rs %}<div>{{ r }}</div>{% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- 코인 미리보기 -->
+  <div class="coins-preview">
+    <div class="sec-label">PREVIEW</div>
+    <div class="sec-title"><em>상위 5</em> 코인 미리보기</div>
+    <div class="sec-sub" style="margin-bottom:1.2rem">전체 10개 분석은 <a href="./scanner.html">알트코인 스캐너</a>에서 확인하세요.</div>
+
+    <div class="coin-row" style="background:transparent;border:none;color:var(--gray);font-size:.82rem;font-weight:600">
+      <div>티커</div><div>이름</div><div class="coin-px">현재가</div>
+      <div class="coin-pct">24h</div><div class="coin-pct">7일</div><div style="text-align:center">판정</div>
+    </div>
+    {% for c in coins %}
+    <div class="coin-row">
+      <div class="coin-sym">{{ c.ticker }}</div>
+      <div class="coin-name">{{ c.name }}</div>
+      <div class="coin-px">{{ c.price|fmt_krw }}</div>
+      <div class="coin-pct {{ c.change_24h|fmt_pct_class }}">{{ c.change_24h|fmt_pct }}</div>
+      <div class="coin-pct {{ c.change_7d|fmt_pct_class }}">{{ c.change_7d|fmt_pct }}</div>
+      <div style="text-align:center"><span class="verdict v-{{ c.code }}">{{ c.verdict }}</span></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 6개 영역 상세 -->
+<div class="page" id="page-scores">
+  <div class="sec-label">DETAILS</div>
+  <div class="sec-title"><em>영역별</em> 상세 점수</div>
+  <div class="sec-sub">각 영역 -2 ~ +2점. 합산 점수가 +7 이상이면 강한 매수, -4 이하면 현금화 신호입니다.</div>
+
+  {% set tiles2 = [
+      ('A','유동성 (Macro)', scores.liquidity, reasons.liquidity, 'Fed 금리·DXY·M2 통화량'),
+      ('B','반감기 사이클', scores.halving, reasons.halving, '비트코인 반감기 기준 사이클 단계'),
+      ('C','BTC 추세', scores.btc_trend, reasons.btc_trend, '비트코인 50일선·200일선·골든/데드크로스'),
+      ('D','거래량', scores.volume, reasons.volume, '비트코인 5일/20일 거래량 비교'),
+      ('E','ETF · 온체인', scores.etf, reasons.etf, '비트코인 현물 ETF 순유입·온체인 지표'),
+      ('F','과열 심리', scores.sentiment, reasons.sentiment, 'Fear & Greed · 김치프리미엄'),
+  ] %}
+  <div class="scores-grid">
+  {% for letter,title,sc,rs,desc in tiles2 %}
+    <div class="score-tile">
+      <div class="tile-hdr">
+        <div><span class="tile-letter">{{ letter }}</span><span class="tile-title">{{ title }}</span></div>
+        <div class="tile-score {% if sc >= 1 %}pos{% elif sc <= -1 %}neg{% else %}neutral{% endif %}">
+          {% if sc > 0 %}+{% endif %}{{ sc }}
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:var(--gold);margin-bottom:.4rem">{{ desc }}</div>
+      <div class="tile-reasons">
+        {% for r in rs %}<div>· {{ r }}</div>{% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+</div>
+
+<!-- 코인 미리보기 (단순) -->
+<div class="page" id="page-preview">
+  <div class="sec-label">COINS</div>
+  <div class="sec-title"><em>상위 5</em> 코인 한눈에</div>
+  <div class="sec-sub">전체 10개 코인 분석은 <a href="./scanner.html">알트 스캐너</a>로.</div>
+  <div class="coin-row" style="background:transparent;border:none;color:var(--gray);font-size:.82rem;font-weight:600">
+    <div>티커</div><div>이름</div><div class="coin-px">현재가</div>
+    <div class="coin-pct">24h</div><div class="coin-pct">7일</div><div style="text-align:center">판정</div>
+  </div>
+  {% for c in coins %}
+  <div class="coin-row">
+    <div class="coin-sym">{{ c.ticker }}</div>
+    <div class="coin-name">{{ c.name }}</div>
+    <div class="coin-px">{{ c.price|fmt_krw }}</div>
+    <div class="coin-pct {{ c.change_24h|fmt_pct_class }}">{{ c.change_24h|fmt_pct }}</div>
+    <div class="coin-pct {{ c.change_7d|fmt_pct_class }}">{{ c.change_7d|fmt_pct }}</div>
+    <div style="text-align:center"><span class="verdict v-{{ c.code }}">{{ c.verdict }}</span></div>
+  </div>
+  {% endfor %}
+</div>
+
+<footer>
+  <strong>⚠ 투자 유의사항</strong><br>
+  본 자료는 공개 데이터 기반의 투자 참고용 정보입니다. 특정 코인/ETF의 매수·매도를 권유하지 않습니다.<br>
+  암호화폐 ETF는 변동성이 매우 큰 자산이며, 단기간에 큰 손실이 발생할 수 있습니다.<br>
+  데이터: CoinGecko, Upbit, Alternative.me, Farside Investors, FRED, Yahoo Finance<br>
+  실제 매매는 본인 판단과 책임으로 진행하세요.
+</footer>
+
+<script>
+function tab(name, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-'+name).classList.add('active');
+}
+</script>
+</body>
+</html>
