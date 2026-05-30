@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import shutil
 import sqlite3
 import sys
 import traceback
@@ -15,7 +16,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from coin_data import TOP_COINS, COIN_TO_ETF, LAST_HALVING_DATE, NEXT_HALVING_DATE
+from coin_data import TOP_COINS, COIN_TO_ETF, BLOCKCHAIN_ETFS, LAST_HALVING_DATE, NEXT_HALVING_DATE
 import market_data as md
 import macro_data as mc
 import scoring_engine as se
@@ -171,7 +172,10 @@ def main():
 
     # 4. ETF 가격
     log.info("[4.5/5] ETF 가격 수집...")
-    all_etfs = sorted({e['ticker'] for lst in COIN_TO_ETF.values() for e in lst})
+    all_etfs = sorted(
+        {e['ticker'] for lst in COIN_TO_ETF.values() for e in lst}
+        | {e['ticker'] for e in BLOCKCHAIN_ETFS}
+    )
     etf_prices = md.get_etf_prices(all_etfs)
 
     # ETF 추천 생성 (시장 점수에 따른 행동 권고)
@@ -192,6 +196,12 @@ def main():
 
     # 포트폴리오용 ETF 가격 JSON
     save_etf_prices_json(output_dir, etf_prices, usd_krw)
+
+    # ★ 포트폴리오 페이지용 통합 가격 JSON (코인 원화 + ETF 달러)
+    save_portfolio_prices_json(output_dir, coins, etf_prices, timestamp_str)
+
+    # ★ 포트폴리오 정적 페이지를 output/ 으로 복사 (워크플로가 output/*.html 을 배포)
+    copy_portfolio_page(output_dir, args.templates_dir)
 
     # HTML 렌더링
     env = Environment(loader=FileSystemLoader(args.templates_dir))
@@ -355,6 +365,83 @@ def save_etf_prices_json(output_dir: Path, etf_prices: dict, usd_krw: float | No
         }
     (output_dir / 'etf_prices.json').write_text(
         json.dumps(out, ensure_ascii=False, indent=2), encoding='utf-8')
+
+
+def save_portfolio_prices_json(output_dir: Path, coins: dict, etf_prices: dict,
+                               timestamp_str: str):
+    """
+    포트폴리오 페이지(portfolio.html)가 읽는 통합 가격 파일.
+    주식 포트폴리오의 portfolio_prices.json 과 동일한 형식:
+      { "updatedAt": "...", "prices": [ {ticker,name,assetType,currency,currentPrice,priceFetched}, ... ] }
+    - 코인: 원화(KRW)
+    - 코인 ETF: 달러(USD)
+    """
+    # ETF 한글/영문 이름 매핑
+    etf_names = {}
+    for lst in COIN_TO_ETF.values():
+        for e in lst:
+            etf_names[e['ticker']] = e['name']
+    for e in BLOCKCHAIN_ETFS:
+        etf_names[e['ticker']] = e['name']
+
+    prices = []
+
+    # 1) 코인 (원화)
+    for sym, d in coins.items():
+        px = d.get('price') or 0
+        if px <= 0:
+            continue
+        prices.append({
+            'ticker': sym,
+            'name': d.get('name', sym),
+            'assetType': 'coin',
+            'currency': 'KRW',
+            'currentPrice': round(px, 2),
+            'previousClose': None,
+            'changePercent': d.get('change_24h'),
+            'priceFetched': True,
+        })
+
+    # 2) 코인 ETF (달러)
+    for tk, p in etf_prices.items():
+        pu = p.get('price_usd')
+        if pu is None or pu <= 0:
+            continue
+        prices.append({
+            'ticker': tk,
+            'name': etf_names.get(tk, tk),
+            'assetType': 'ETF',
+            'currency': 'USD',
+            'currentPrice': round(pu, 4),
+            'previousClose': None,
+            'changePercent': p.get('change_pct'),
+            'priceFetched': True,
+        })
+
+    out = {
+        'updatedAt': datetime.now().strftime('%Y-%m-%d %H:%M'),
+        'source': 'Upbit/CoinPaprika (coins, KRW) + Yahoo Finance (ETFs, USD)',
+        'count': len(prices),
+        'prices': prices,
+    }
+    (output_dir / 'portfolio_prices.json').write_text(
+        json.dumps(out, ensure_ascii=False, indent=2), encoding='utf-8')
+    log.info("  ✓ portfolio_prices.json (%d종목)", len(prices))
+
+
+def copy_portfolio_page(output_dir: Path, templates_dir: str):
+    """
+    정적 포트폴리오 페이지(portfolio.html)를 output/ 으로 복사.
+    저장소 루트 또는 templates/ 폴더 어디에 있어도 찾아서 복사한다.
+    (Jinja 렌더링 없이 그대로 복사 — 페이지 내부는 순수 JS)
+    """
+    candidates = [Path('portfolio.html'), Path(templates_dir) / 'portfolio.html']
+    for src in candidates:
+        if src.exists():
+            shutil.copy(src, output_dir / 'portfolio.html')
+            log.info("  ✓ portfolio.html 복사 (%s)", src)
+            return
+    log.warning("  ! portfolio.html 을 찾지 못함 (루트/templates 어디에도 없음)")
 
 
 if __name__ == '__main__':
